@@ -11,6 +11,14 @@ import CoreLocation
 
 class ViewController: UIViewController {
     
+//    MARK: Variables declaration
+    
+    var locationManager: CLLocationManager!
+    var annotationsArray = [MKPointAnnotation]()
+    var currentLocation = ""
+    
+//    MARK: Constants declaration
+    
     let mapView: MKMapView = {
         let mapView = MKMapView()
         mapView.translatesAutoresizingMaskIntoConstraints = false
@@ -43,7 +51,7 @@ class ViewController: UIViewController {
         return resetButton
     }()
     
-    var annotationsArray = [MKPointAnnotation]()
+//    MARK: VC LifeCycles
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,6 +64,12 @@ class ViewController: UIViewController {
         routeButton.addTarget(self, action: #selector(routeButtonTapped), for: .touchUpInside)
         resetButton.addTarget(self, action: #selector(resetButtonTapped), for: .touchUpInside)
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        determineCurrentLocation()
+    }
+    
+//    MARK: Button Selectors
     
     @objc func addressButtonTapped() {
         alertAddAddress(title: "Add Address", placeholder: "Insert Address") { [self] text in
@@ -142,6 +156,8 @@ class ViewController: UIViewController {
     }
 }
 
+// MARK: Constraints setting
+
 extension ViewController {
     
     func setConstraints() {
@@ -174,6 +190,8 @@ extension ViewController {
     }
 }
 
+// MARK: MKMapViewDelegate
+
 extension ViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
@@ -181,6 +199,60 @@ extension ViewController: MKMapViewDelegate {
         let renderer = MKPolylineRenderer(overlay: overlay as! MKPolyline)
         renderer.strokeColor = UIColor(red: 182 / 255, green: 33 / 255, blue: 45 / 255, alpha: 1)
         return renderer
+    }
+}
+
+// MARK: CLLocationManagerDelegate
+
+extension ViewController: CLLocationManagerDelegate {
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+            let mUserLocation:CLLocation = locations[0] as CLLocation
+            let center = CLLocationCoordinate2D(latitude: mUserLocation.coordinate.latitude, longitude: mUserLocation.coordinate.longitude)
+            let mRegion = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+
+            mapView.setRegion(mRegion, animated: true)
+        
+        let mkAnnotation: MKPointAnnotation = MKPointAnnotation()
+            mkAnnotation.coordinate = CLLocationCoordinate2DMake(mUserLocation.coordinate.latitude, mUserLocation.coordinate.longitude)
+            mkAnnotation.title = self.setUsersClosestLocation(mLattitude: mUserLocation.coordinate.latitude, mLongitude: mUserLocation.coordinate.longitude)
+            mapView.addAnnotation(mkAnnotation)
+        }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+            print("Error - locationManager: \(error.localizedDescription)")
+        }
+    
+    func determineCurrentLocation() {
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestAlwaysAuthorization()
+
+        if CLLocationManager.locationServicesEnabled() {
+            locationManager.startUpdatingLocation()
+        }
+    }
+    
+    func setUsersClosestLocation(mLattitude: CLLocationDegrees, mLongitude: CLLocationDegrees) -> String {
+        let geoCoder = CLGeocoder()
+        let location = CLLocation(latitude: mLattitude, longitude: mLongitude)
+
+        geoCoder.reverseGeocodeLocation(location) {
+            (placemarks, error) -> Void in
+
+            if let mPlacemark = placemarks{
+                if let dict = mPlacemark[0].addressDictionary as? [String: Any]{
+                    if let Name = dict["Name"] as? String{
+                        if let City = dict["City"] as? String{
+                            self.currentLocation = Name + ", " + City
+                        }
+                    }
+                }
+            }
+        }
+        
+        return currentLocation
     }
 }
 
