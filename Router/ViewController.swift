@@ -217,6 +217,7 @@ extension ViewController: CLLocationManagerDelegate {
             mkAnnotation.coordinate = CLLocationCoordinate2DMake(mUserLocation.coordinate.latitude, mUserLocation.coordinate.longitude)
             mkAnnotation.title = self.setUsersClosestLocation(mLattitude: mUserLocation.coordinate.latitude, mLongitude: mUserLocation.coordinate.longitude)
             mapView.addAnnotation(mkAnnotation)
+            annotationsArray.append(mkAnnotation)
         }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -251,7 +252,6 @@ extension ViewController: CLLocationManagerDelegate {
                 }
             }
         }
-        
         return currentLocation
     }
 }

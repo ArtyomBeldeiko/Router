@@ -2,8 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Allow app to always know your current location.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Allow this to always know your location. </string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Allow app to know your current location.</string>
 	<key>UIApplicationSceneManifest</key>
